@@ -44,6 +44,15 @@ class TestGetKV(TestCase):
             method='GET'
         )
 
+    def test_kv_gets_endpoint_root_if_no_key_specified(self):
+        get_kv()
+
+        expected_url = 'http://localhost:8500/v1/kv/'
+        self.request.Request.assert_called_once_with(
+            url=expected_url,
+            method='GET'
+        )
+
     def test_get_kv_does_request(self):
         get_kv('some/path', recurse=True)
 

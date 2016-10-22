@@ -28,7 +28,7 @@ def put_kv(k, v, endpoint=DEFAULT_ENDPOINT):
         ))
 
 
-def get_kv(k, recurse=False, endpoint=DEFAULT_ENDPOINT):
+def get_kv(k=None, recurse=False, endpoint=DEFAULT_ENDPOINT):
     """
     Get the key value mapping from the distributed key value store
     :param str k: key to get
@@ -37,7 +37,7 @@ def get_kv(k, recurse=False, endpoint=DEFAULT_ENDPOINT):
     :param str endpoint: path to get the value from
     :return dict mapping: key value mapping
     """
-    url = join(endpoint, k)
+    url = join(endpoint, k) if k else endpoint
     req = request.Request(
         url=join(url, '?recurse') if recurse else url,
         method='GET'
@@ -52,7 +52,7 @@ def get_kv(k, recurse=False, endpoint=DEFAULT_ENDPOINT):
     return mapping
 
 
-def delete_kv(k, recurse=False, endpoint=DEFAULT_ENDPOINT):
+def delete_kv(k=None, recurse=False, endpoint=DEFAULT_ENDPOINT):
     """
     Delete a key from the distributed key value store
     :param str k: the key to delete
@@ -60,7 +60,7 @@ def delete_kv(k, recurse=False, endpoint=DEFAULT_ENDPOINT):
     :param str endpoint: api path to DELETE
     :return:
     """
-    url = join(endpoint, k)
+    url = join(endpoint, k) if k else endpoint
     req = request.Request(
         url=join(url, '?recurse') if recurse else url,
         method='DELETE'

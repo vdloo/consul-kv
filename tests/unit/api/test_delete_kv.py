@@ -35,6 +35,14 @@ class TestDeleteKV(TestCase):
             method='DELETE'
         )
 
+    def test_delete_kv_deletes_endpoint_root_if_no_key_specified(self):
+        delete_kv()
+
+        self.request.Request.assert_called_once_with(
+            url='http://localhost:8500/v1/kv/',
+            method='DELETE'
+        )
+
     def test_delete_kv_does_request(self):
         delete_kv('some/path')
 
