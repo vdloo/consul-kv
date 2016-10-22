@@ -1,13 +1,12 @@
 from base64 import b64decode, b64encode
 from json import loads, dumps
+from logging import getLogger
 from os.path import join
 from urllib import request
-from logging import getLogger
+
+from consul_kv.settings import DEFAULT_KV_ENDPOINT, DEFAULT_TXN_ENDPOINT
 
 log = getLogger(__name__)
-
-DEFAULT_KV_ENDPOINT = 'http://localhost:8500/v1/kv/'
-DEFAULT_TXN_ENDPOINT = 'http://localhost:8500/v1/txn/'
 
 
 def put_kv(k, v, endpoint=DEFAULT_KV_ENDPOINT):
