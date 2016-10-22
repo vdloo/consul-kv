@@ -36,7 +36,7 @@ class TestPutKV(TestCase):
             self.request.Request.return_value
         )
 
-    def test_put_logs_debug_message(self):
+    def test_put_kv_logs_debug_message(self):
         put_kv('some_key', 'some_value')
 
         self.assertTrue(self.log.debug.called)

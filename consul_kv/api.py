@@ -1,20 +1,21 @@
-from base64 import b64decode
-from json import loads
+from base64 import b64decode, b64encode
+from json import loads, dumps
 from os.path import join
 from urllib import request
 from logging import getLogger
 
 log = getLogger(__name__)
 
-DEFAULT_ENDPOINT = 'http://localhost:8500/v1/kv/'
+DEFAULT_KV_ENDPOINT = 'http://localhost:8500/v1/kv/'
+DEFAULT_TXN_ENDPOINT = 'http://localhost:8500/v1/txn/'
 
 
-def put_kv(k, v, endpoint=DEFAULT_ENDPOINT):
+def put_kv(k, v, endpoint=DEFAULT_KV_ENDPOINT):
     """
     Put a key and value to the distributed key value store at the location path
     :param str k: the key to put
     :param str v: the value to put
-    :param str endpoint: api path to PUT to
+    :param str endpoint: API url to PUT to
     :return None:
     """
     encoded = str.encode(str(v))
@@ -28,13 +29,57 @@ def put_kv(k, v, endpoint=DEFAULT_ENDPOINT):
         ))
 
 
-def get_kv(k=None, recurse=False, endpoint=DEFAULT_ENDPOINT):
+def _mapping_to_txn_data(mapping, verb='set'):
+    """
+    Transform a key value mapping to a list of operations to perform
+    inside the atomic transaction.
+    :param dict mapping: flat dict of key/values put
+    :param str verb: The type of operation to perform. See the list of possibilities
+    here https://www.consul.io/docs/agent/http/kv.html#txn
+    :return list[dict, ..] txn_data: List of dicts describing the operations to perform
+    """
+    return [
+        {
+            'KV': {
+                'Verb': verb,
+                'Key': k,
+                'Value': b64encode(v.encode('utf-8')).decode('utf-8'),
+            }
+        } for k, v in mapping.items()
+    ]
+
+
+def put_kv_txn(mapping, endpoint=DEFAULT_TXN_ENDPOINT):
+    """
+    Update multiple keys inside a single, atomic transaction.
+    The body of the request should be a list of operations to
+    perform inside the atomic transaction. Up to 64 operations
+    may be present in a single transaction. Each Base64-encoded
+    blob of data can not be larger than 512kB.
+    https://www.consul.io/docs/agent/http/kv.html
+    :param dict mapping: flat dict of key/values put
+    :param str endpoint: API url to PUT to. Should be a txn endpoint.
+    :return None:
+    """
+    txn_data = _mapping_to_txn_data(mapping, verb='set')
+    data = dumps(txn_data).encode('utf-8')
+    req = request.Request(
+        url=endpoint, data=data, method='PUT',
+        headers={'Content-Type': 'application/json'}
+    )
+    with request.urlopen(req) as f:
+        log.debug("PUT k v mapping {} to {}: {}, {}".format(
+            mapping, endpoint, f.status, f.reason
+        ))
+
+
+def get_kv(k=None, recurse=False, endpoint=DEFAULT_KV_ENDPOINT):
     """
     Get the key value mapping from the distributed key value store
     :param str k: key to get
     :param bool recurse: whether or not to recurse over the path and
     retrieve all nested values
-    :param str endpoint: path to get the value from
+    :param str endpoint: API url to get the value from
     :return dict mapping: key value mapping
     """
     url = join(endpoint, k) if k else endpoint
@@ -52,12 +97,12 @@ def get_kv(k=None, recurse=False, endpoint=DEFAULT_ENDPOINT):
     return mapping
 
 
-def delete_kv(k=None, recurse=False, endpoint=DEFAULT_ENDPOINT):
+def delete_kv(k=None, recurse=False, endpoint=DEFAULT_KV_ENDPOINT):
     """
     Delete a key from the distributed key value store
     :param str k: the key to delete
     :param bool recurse: recurse the path and delete all entries
-    :param str endpoint: api path to DELETE
+    :param str endpoint: API url to DELETE
     :return:
     """
     url = join(endpoint, k) if k else endpoint
