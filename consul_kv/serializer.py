@@ -18,7 +18,8 @@ def loop_dictionary(dictionary, path='', callback=lambda path, k, v: None):
 
 def map_dictionary(dictionary):
     """
-    Map the
+    Map a dictionary to key value pairs where each key is an
+    accumulation of all levels of nesting for the value
     :param dict dictionary: to flatten into a k/v mapping
     :return dict mapping: key value mapping
     """
