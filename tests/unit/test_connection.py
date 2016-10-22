@@ -1,4 +1,4 @@
-from consul_kv import Connection
+from consul_kv import Connection, DEFAULT_KV_ENDPOINT
 from consul_kv.api import DEFAULT_KV_ENDPOINT
 from tests.testcase import TestCase
 
@@ -16,6 +16,10 @@ class TestConnection(TestCase):
             'some/key/1': 'some_value_1',
             'some/key/2': 'some_value_2'
         }
+        self.dictionary = {
+            'some': {'key': {'1': 'some_value1', '2': 'some_value2'}}
+        }
+        self.map_dictionary = self.set_up_patch('consul_kv.map_dictionary')
 
     def test_connection_has_correct_kv_endpoint(self):
         self.assertEqual(self.conn.kv_endpoint, self.kv_endpoint)
@@ -38,6 +42,18 @@ class TestConnection(TestCase):
         self.put_kv_txn.assert_called_once_with(
             self.mapping, endpoint=self.txn_endpoint
         )
+
+    def test_connection_put_dict_maps_dictionary(self):
+        self.conn.put_dict(self.dictionary)
+
+        self.map_dictionary.assert_called_once_with(self.dictionary)
+
+    def test_connection_put_dict_puts_mapping(self):
+        put_mapping = self.set_up_patch('consul_kv.Connection.put_mapping')
+
+        self.conn.put_dict(self.dictionary)
+
+        put_mapping.assert_called_once_with(self.map_dictionary.return_value)
 
     def test_connection_get_calls_get_kv_with_kv_endpoint(self):
         self.conn.get('key1')

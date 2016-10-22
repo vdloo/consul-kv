@@ -1,4 +1,6 @@
-from consul_kv.api import DEFAULT_KV_ENDPOINT, put_kv, get_kv, delete_kv, put_kv_txn
+from consul_kv.api import put_kv, get_kv, delete_kv, put_kv_txn
+from consul_kv.serializer import map_dictionary
+from consul_kv.settings import DEFAULT_KV_ENDPOINT
 
 
 class Connection(object):
@@ -35,9 +37,20 @@ class Connection(object):
         """
         Atomically (Txn) put a key/value mapping at the configured endpoint
         :param dict mapping: dict of key/values put
-        :returnNone:
+        :return None:
         """
         return put_kv_txn(mapping, endpoint=self.txn_endpoint)
+
+    def put_dict(self, dictionary):
+        """
+        Atomically (Txn) put a dict at the configured endpoint
+        :param dict dictionary: dict of nested keys and values
+        {'some': {'key1': 'value1', 'key2': 'value2'} ->
+        [{'some/key1': 'value1, 'some/key2': 'value2}]
+        :return None:
+        """
+        mapping = map_dictionary(dictionary)
+        return self.put_mapping(mapping)
 
     def get(self, k=None, recurse=False):
         """
