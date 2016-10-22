@@ -37,24 +37,24 @@ dictionary = {
 conn.put_dict(dictionary)
 ```
 
-Get a key
+GET a key
 ```python
 conn.get('the/key')
 {'the/key': 'the_value'}
 ```
 
-Get all keys under a path
+GET all keys under a path
 ```python
 conn.get('the', recurse=True)
 {'the/key': 'the_value', 'the/other_key': 'the_other_value'}
 ```
 
-Delete a key
+DELETE a key
 ```python
 conn.delete('the/key')
 ```
 
-Delete all keys under a path
+DELETE all keys under a path
 ```python
 conn.delete('the', recurse=True)
 ```
