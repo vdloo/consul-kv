@@ -30,26 +30,26 @@ class TestConnection(TestCase):
         self.conn.get('key1')
 
         self.get_kv.assert_called_once_with(
-            'key1', recurse=False, endpoint=self.endpoint
+            k='key1', recurse=False, endpoint=self.endpoint
         )
 
     def test_connection_get_recurses_if_specified(self):
         self.conn.get('key2', recurse=True)
 
         self.get_kv.assert_called_once_with(
-            'key2', recurse=True, endpoint=self.endpoint
+            k='key2', recurse=True, endpoint=self.endpoint
         )
 
     def test_connection_delete_calls_delete_kv_with_endpoint(self):
         self.conn.delete('key1')
 
         self.delete_kv.assert_called_once_with(
-            'key1', recurse=False, endpoint=self.endpoint
+            k='key1', recurse=False, endpoint=self.endpoint
         )
 
     def test_connection_delete_recurses_if_specified(self):
         self.conn.delete('key2', recurse=True)
 
         self.delete_kv.assert_called_once_with(
-            'key2', recurse=True, endpoint=self.endpoint
+            k='key2', recurse=True, endpoint=self.endpoint
         )

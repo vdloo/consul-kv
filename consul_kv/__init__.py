@@ -13,8 +13,8 @@ class Connection(object):
     def put(self, k, v):
         return put_kv(k, v, endpoint=self.endpoint)
 
-    def get(self, k, recurse=False):
-        return get_kv(k, recurse=recurse, endpoint=self.endpoint)
+    def get(self, k=None, recurse=False):
+        return get_kv(k=k, recurse=recurse, endpoint=self.endpoint)
 
-    def delete(self, k, recurse=False):
-        return delete_kv(k, recurse=recurse, endpoint=self.endpoint)
+    def delete(self, k=None, recurse=False):
+        return delete_kv(k=k, recurse=recurse, endpoint=self.endpoint)
