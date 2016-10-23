@@ -42,7 +42,7 @@ def _mapping_to_txn_data(mapping, verb='set'):
             'KV': {
                 'Verb': verb,
                 'Key': k,
-                'Value': b64encode(v.encode('utf-8')).decode('utf-8'),
+                'Value': b64encode(str(v).encode('utf-8')).decode('utf-8'),
             }
         } for k, v in mapping.items()
     ]

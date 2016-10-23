@@ -33,6 +33,11 @@ class TestMappingToTxnData(TestCase):
         ]
         self.assertCountEqual(ret, expected_txn_data)
 
+    def test_mapping_to_txn_data_can_deal_with_ints(self):
+        self.mapping['some/key/3'] = 123
+
+        _mapping_to_txn_data(self.mapping)
+
     def test_mapping_to_txn_data_returns_txn_data_list_of_mapping_with_specified_operation(self):
         ret = _mapping_to_txn_data(self.mapping, verb='cas')
 
