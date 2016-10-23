@@ -1,5 +1,5 @@
 from consul_kv.api import put_kv, get_kv, delete_kv, put_kv_txn
-from consul_kv.serializer import map_dictionary
+from consul_kv.serializer import map_dictionary, dictionary_map
 from consul_kv.settings import DEFAULT_KV_ENDPOINT
 
 
@@ -60,6 +60,27 @@ class Connection(object):
         :return dict mapping: retrieved key/value mapping
         """
         return get_kv(k=k, recurse=recurse, endpoint=self.kv_endpoint)
+
+    def get_mapping(self, k=None):
+        """
+        Retrieve a key value mapping from a specified key
+        Note: contrary to put_mapping, this method is not atomic
+        :param k: The key to get recursively and return as a key value mapping
+        :return dict mapping: The retrieved key value mapping
+        """
+        return self.get(k=k, recurse=True)
+
+    def get_dict(self, k=None):
+        """
+        Retrieve a dict that represents nested key value entries from the specified
+        endpoint. [{'some/key1': 'value1, 'some/key2': 'value2}] ->
+        {'some': {'key1': 'value1', 'key2': 'value2'}
+        Note: contrary to put_dict, this method is not atomic
+        :param k: The key to get recursively and return as a dict
+        :return dict dictionary: The retrieved dict of nested keys and values
+        """
+        mapping = self.get_mapping(k=k)
+        return dictionary_map(mapping)
 
     def delete(self, k=None, recurse=False):
         """

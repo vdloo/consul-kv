@@ -69,6 +69,49 @@ class TestConnection(TestCase):
             k='key2', recurse=True, endpoint=self.kv_endpoint
         )
 
+    def test_connection_get_returns_api_result(self):
+        ret = self.conn.get('key2', recurse=True)
+
+        self.assertEqual(ret, self.get_kv.return_value)
+
+    def test_connection_get_mapping_calls_get_recursively(self):
+        get = self.set_up_patch('consul_kv.Connection.get')
+
+        self.conn.get_mapping('key1')
+
+        get.assert_called_once_with(k='key1', recurse=True)
+
+    def test_connection_get_mapping_returns_mapping(self):
+        get = self.set_up_patch('consul_kv.Connection.get')
+
+        ret = self.conn.get_mapping('key1')
+
+        self.assertEqual(ret, get.return_value)
+
+    def test_connection_get_dict_calls_get_mapping(self):
+        get_mapping = self.set_up_patch('consul_kv.Connection.get_mapping')
+        self.set_up_patch('consul_kv.dictionary_map')
+
+        self.conn.get_dict('key2')
+
+        get_mapping.assert_called_once_with(k='key2')
+
+    def test_connection_get_dict_converts_key_value_mapping_into_dictionary(self):
+        get_mapping = self.set_up_patch('consul_kv.Connection.get_mapping')
+        dictionary_map = self.set_up_patch('consul_kv.dictionary_map')
+
+        self.conn.get_dict('key2')
+
+        dictionary_map.assert_called_once_with(get_mapping.return_value)
+
+    def test_connection_get_dict_returns_converted_mapping(self):
+        self.set_up_patch('consul_kv.Connection.get_mapping')
+        dictionary_map = self.set_up_patch('consul_kv.dictionary_map')
+
+        ret = self.conn.get_dict('key2')
+
+        self.assertEqual(ret, dictionary_map.return_value)
+
     def test_connection_delete_calls_delete_kv_with_kv_endpoint(self):
         self.conn.delete('key1')
 
