@@ -2,6 +2,18 @@
 
 Python 3 client for the [consul key/value store](https://www.consul.io/docs/agent/http/kv.html).
 
+## Installation
+
+Get it from [pypi](https://pypi.python.org/pypi/consul_kv/)
+```
+pip install consul_kv
+```
+
+Or install directly from GitHub
+```
+pip install git+https://github.com/vdloo/consul-kv.git@master#egg=consul_kv
+```
+
 ## Usage
 
 Instantiate a client
