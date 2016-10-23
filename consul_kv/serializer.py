@@ -1,19 +1,6 @@
 from os.path import join
 
-
-def loop_dictionary(dictionary, path='', callback=lambda path, k, v: None):
-    """
-    Loop the dictionary and perform the callback for each value
-    :param dict dictionary: dictionary to loop for values
-    :param str path: the depth in the dict joined by /
-    :param func callback: the callback to perform for each value
-    :return None:
-    """
-    for k, v in dictionary.items():
-        if isinstance(v, dict):
-            loop_dictionary(v, path=join(path, k), callback=callback)
-        else:
-            callback(path, k, v)
+from consul_kv.utils import loop_dictionary, inflate_key_value_pair, dict_merge
 
 
 def map_dictionary(dictionary):
@@ -33,3 +20,31 @@ def map_dictionary(dictionary):
         callback=add_item_to_mapping
     )
     return mapping
+
+
+def dictionary_map(mapping):
+    """
+    Create a dictionary from a mapping of key value pairs where
+    each key is represented by nested dicts based on slashes in
+    the key path
+    :param dict mapping: key value mapping
+    :return dict dictionary: k/v mapping represented as a nested dict
+    """
+    dictionary = dict()
+
+    def add_item_to_dictionary(path, k, v):
+        dictionary.update(
+            dict_merge(
+                dictionary,
+                inflate_key_value_pair(
+                    join(path, k), v
+                )
+            )
+        )
+
+    loop_dictionary(
+        mapping,
+        callback=add_item_to_dictionary
+    )
+
+    return dictionary

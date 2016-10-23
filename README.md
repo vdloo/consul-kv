@@ -47,6 +47,16 @@ GET all keys under a path
 ```python
 conn.get('the', recurse=True)
 {'the/key': 'the_value', 'the/other_key': 'the_other_value'}
+
+# or
+conn.get_mapping('the')
+{'the/key': 'the_value', 'the/other_key': 'the_other_value'}
+```
+
+GET a dictionary based on all keys under a path
+```python
+conn.get_dict('the')
+{'the': {'key': 'the_value', 'other_key': 'the_other_value'}}
 ```
 
 DELETE a key
