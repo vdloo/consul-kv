@@ -1,3 +1,4 @@
+import socket
 import json
 
 from mock import Mock
@@ -46,7 +47,16 @@ class TestPutTxn(TestCase):
         put_kv_txn(self.mapping)
 
         self.request.urlopen.assert_called_once_with(
-            self.request.Request.return_value
+            self.request.Request.return_value,
+            timeout=socket._GLOBAL_DEFAULT_TIMEOUT
+        )
+
+    def test_put_kv_txn_does_request_with_specified_timeout(self):
+        put_kv_txn(self.mapping, timeout=10)
+
+        self.request.urlopen.assert_called_once_with(
+            self.request.Request.return_value,
+            timeout=10
         )
 
     def test_put_kv_txn_logs_debug_message(self):

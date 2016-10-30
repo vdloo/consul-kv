@@ -1,3 +1,4 @@
+import socket
 from mock import Mock
 
 from consul_kv.api import put_kv
@@ -33,7 +34,16 @@ class TestPutKV(TestCase):
         put_kv('some_key', 'some_value')
 
         self.request.urlopen.assert_called_once_with(
-            self.request.Request.return_value
+            self.request.Request.return_value,
+            timeout=socket._GLOBAL_DEFAULT_TIMEOUT
+        )
+
+    def test_put_kv_does_request_with_specified_timeout(self):
+        put_kv('some_key', 'some_value', timeout=10)
+
+        self.request.urlopen.assert_called_once_with(
+            self.request.Request.return_value,
+            timeout=10
         )
 
     def test_put_kv_logs_debug_message(self):

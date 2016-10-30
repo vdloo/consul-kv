@@ -1,3 +1,4 @@
+import socket
 from mock import Mock
 
 from consul_kv import get_kv
@@ -57,7 +58,16 @@ class TestGetKV(TestCase):
         get_kv('some/path', recurse=True)
 
         self.request.urlopen.assert_called_once_with(
-            self.request.Request.return_value
+            self.request.Request.return_value,
+            timeout=socket._GLOBAL_DEFAULT_TIMEOUT
+        )
+
+    def test_kv_does_request_with_specified_timeout(self):
+        get_kv('some/path', recurse=True, timeout=10)
+
+        self.request.urlopen.assert_called_once_with(
+            self.request.Request.return_value,
+            timeout=10
         )
 
     def test_get_kv_returns_mapping(self):
