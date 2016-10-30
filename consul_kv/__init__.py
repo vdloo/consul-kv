@@ -1,6 +1,6 @@
 from consul_kv.api import put_kv, get_kv, delete_kv, put_kv_txn
 from consul_kv.serializer import map_dictionary, dictionary_map
-from consul_kv.settings import DEFAULT_KV_ENDPOINT
+from consul_kv.settings import DEFAULT_KV_ENDPOINT, DEFAULT_REQUEST_TIMEOUT
 
 
 class Connection(object):
@@ -8,6 +8,7 @@ class Connection(object):
     Client for the consul key value store API
     """
     kv_endpoint = DEFAULT_KV_ENDPOINT
+    timeout = DEFAULT_REQUEST_TIMEOUT
 
     @staticmethod
     def _kv_endpoint_to_txn_endpoint(kv_endpoint):
@@ -18,11 +19,12 @@ class Connection(object):
         """
         return kv_endpoint.replace('/v1/kv', '/v1/txn')
 
-    def __init__(self, endpoint=None):
+    def __init__(self, endpoint=None, timeout=None):
         self.kv_endpoint = endpoint or self.kv_endpoint
         self.txn_endpoint = self._kv_endpoint_to_txn_endpoint(
             self.kv_endpoint
         )
+        self.timeout = timeout or DEFAULT_REQUEST_TIMEOUT
 
     def put(self, k, v):
         """
@@ -31,7 +33,7 @@ class Connection(object):
         :param str v: value to put
         :return None:
         """
-        return put_kv(k, v, endpoint=self.kv_endpoint)
+        return put_kv(k, v, endpoint=self.kv_endpoint, timeout=self.timeout)
 
     def put_mapping(self, mapping):
         """
@@ -39,7 +41,9 @@ class Connection(object):
         :param dict mapping: dict of key/values put
         :return None:
         """
-        return put_kv_txn(mapping, endpoint=self.txn_endpoint)
+        return put_kv_txn(
+            mapping, endpoint=self.txn_endpoint, timeout=self.timeout
+        )
 
     def put_dict(self, dictionary):
         """
@@ -59,7 +63,10 @@ class Connection(object):
         :param bool recurse: return nested entries
         :return dict mapping: retrieved key/value mapping
         """
-        return get_kv(k=k, recurse=recurse, endpoint=self.kv_endpoint)
+        return get_kv(
+            k=k, recurse=recurse, endpoint=self.kv_endpoint,
+            timeout=self.timeout
+        )
 
     def get_mapping(self, k=None):
         """
@@ -89,4 +96,7 @@ class Connection(object):
         :param bool recurse: delete nested entries
         :return None:
         """
-        return delete_kv(k=k, recurse=recurse, endpoint=self.kv_endpoint)
+        return delete_kv(
+            k=k, recurse=recurse,
+            endpoint=self.kv_endpoint, timeout=self.timeout
+        )

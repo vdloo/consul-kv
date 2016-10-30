@@ -1,3 +1,4 @@
+import socket
 from mock import Mock
 
 from consul_kv.api import delete_kv
@@ -47,7 +48,16 @@ class TestDeleteKV(TestCase):
         delete_kv('some/path')
 
         self.request.urlopen.assert_called_once_with(
-            self.request.Request.return_value
+            self.request.Request.return_value,
+            timeout=socket._GLOBAL_DEFAULT_TIMEOUT
+        )
+
+    def test_delete_kv_does_request_with_specified_timeout(self):
+        delete_kv('some/path', timeout=10)
+
+        self.request.urlopen.assert_called_once_with(
+            self.request.Request.return_value,
+            timeout=10
         )
 
     def test_delete_kv_logs_debug_message(self):
