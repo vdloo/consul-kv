@@ -97,7 +97,7 @@ def get_kv(k=None, recurse=False, endpoint=DEFAULT_KV_ENDPOINT, timeout=socket._
         # values are stored base64 encoded in consul, they
         # are decoded before returned by this function.
         r['Key']: b64decode(r['Value']).decode('utf-8')
-        if r['Value'] else None for r in result
+        if r['Value'] else None for r in result if r['Key']
     }
     return mapping
 

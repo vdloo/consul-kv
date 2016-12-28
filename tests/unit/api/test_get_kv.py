@@ -92,3 +92,16 @@ class TestGetKV(TestCase):
             'key1': None
         }
         self.assertEqual(ret, expected_mapping)
+
+    def test_get_kv_ignores_empty_keys(self):
+        self.json_dump = '[{"Key": "", "Value": null}]'
+        self.request.urlopen.return_value.__enter__ = lambda x: Mock(
+            read=lambda: Mock(
+                decode=lambda _: self.json_dump
+            )
+        )
+
+        ret = get_kv('some/path', recurse=True)
+
+        expected_mapping = {}
+        self.assertEqual(ret, expected_mapping)
