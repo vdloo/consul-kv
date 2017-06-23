@@ -30,6 +30,7 @@ class Connection(object):
         """
         Put a key value pair at the configured endpoint
         :param str k: key to put
+        :param int cas: the cas version number. If None, no cas is used.
         :param str v: value to put
         :return None:
         """
@@ -57,16 +58,29 @@ class Connection(object):
         return self.put_mapping(mapping)
 
     def get_cas(self, k=None, recurse=False):
+        """
+        Get a value for a key and use CAS to guard updates against updates
+        from multiple clients.
+        :param str k: key to get
+        :param bool recurse: return nested entries
+        :return dict mapping: retrieved key/value mapping
+        """
         return get_kv_cas(
-                k=k, recurse=recurse, endpoint=self.kv_endpoint,
-                timeout=self.timeout
-                )
+            k=k, recurse=recurse, endpoint=self.kv_endpoint,
+            timeout=self.timeout
+        )
 
     def get_meta(self, k=None, recurse=False):
+        """
+        Get the raw un-decoded key value data for a key
+        :param str k: key to get
+        :param bool recurse: return nested entries
+        :return dict: raw API response
+        """
         return get_kv_meta(
-                k=k, recurse=recurse, endpoint=self.kv_endpoint,
-                timeout=self.timeout
-                )
+            k=k, recurse=recurse, endpoint=self.kv_endpoint,
+            timeout=self.timeout
+        )
 
     def get(self, k=None, recurse=False):
         """

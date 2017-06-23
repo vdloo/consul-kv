@@ -65,7 +65,7 @@ class TestDeleteKV(TestCase):
 
         self.assertTrue(self.log.debug)
 
-    def test_put_kv_cas(self):
+    def test_delete_kv_passes_cas_version_number_as_a_query_param(self):
         delete_kv('some_key', cas=127)
 
         self.request.Request.assert_called_once_with(
