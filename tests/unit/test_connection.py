@@ -41,7 +41,7 @@ class TestConnection(TestCase):
         self.conn.put('key1', 'value1')
 
         self.put_kv.assert_called_once_with(
-            'key1', 'value1', endpoint=self.kv_endpoint,
+            'key1', 'value1', None, endpoint=self.kv_endpoint,
             timeout=10
         )
 
