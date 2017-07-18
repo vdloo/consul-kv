@@ -16,12 +16,18 @@ Or install directly from GitHub
 pip install git+https://github.com/vdloo/consul-kv.git@master#egg=consul_kv
 ```
 
+Note: this library is rolling release and does not employ semantic versioning. 
+
+Do not depend on the master or update to a new release without checking the changelog, 
+there may be breaking changes. If you want to ensure nothing breaks when a new version 
+is released, pin your pip requirements like for example `consul_kv==0.7.2`.
+
 ## Usage
 
 Instantiate a client
 ```python
 from consul_kv import Connection
-conn = Connection(endpoint='http://localhost:8500/v1/kv')
+conn = Connection(endpoint='http://localhost:8500/v1/')
 ```
 
 PUT a key
@@ -81,6 +87,11 @@ conn.delete('the/key')
 DELETE all keys under a path
 ```python
 conn.delete('the', recurse=True)
+```
+
+GET information about the agent from the [Agent HTTP API](https://www.consul.io/api/agent.html)
+```python
+conn.get_meta('agent/self')
 ```
 
 
