@@ -1,3 +1,14 @@
+### 0.7.3
+
+Add verb to put_dict so it can use CAS to only create the keys in the mapping if they do not exist yet.
+```
+In [2]: d = {'k1': 'v1', 'kv2': 'v2'}
+In [3]: c = Connection()
+In [4]: c.put_dict(d, verb='cas')
+In [5]: c.put_dict(d, verb='cas')
+HTTPError: HTTP Error 409: Conflict
+```
+
 ### 0.7.2
 
 Breaks compatiblity with previous versions.
