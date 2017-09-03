@@ -57,6 +57,19 @@ dictionary = {
 conn.put_dict(dictionary)
 ```
 
+Atomically PUT a dictionary if the keys don't already exist
+```python
+dictionary = {
+    'a': {
+        'key': 'a_value'
+    },
+    'another': {
+        'k': 'another_value'
+    }
+}
+conn.put_dict(dictionary, verb='cas')
+```
+
 GET a key
 ```python
 conn.get('the/key')

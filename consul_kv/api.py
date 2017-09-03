@@ -52,24 +52,24 @@ def _mapping_to_txn_data(mapping, verb='set'):
     here https://www.consul.io/docs/agent/http/kv.html#txn
     :return list[dict, ..] txn_data: List of dicts describing the operations to perform
     """
-    return [
+    txn_data = [
         {
             'KV': {
-                'Verb': v[2],
-                'Key': k,
-                'Value': b64encode(str(v[0]).encode('utf-8')).decode('utf-8'),
-                'Index': v[1]
-            } if isinstance(v, tuple) else
-            {
                 'Verb': verb,
                 'Key': k,
                 'Value': b64encode(str(v).encode('utf-8')).decode('utf-8'),
             }
         } for k, v in mapping.items()
     ]
+    if verb == 'cas':
+        # If the index is 0, Consul will only put the key if it does not already exist.
+        # See https://www.consul.io/api/kv.html#create-update-key
+        for item in txn_data:
+            item['Index'] = 0
+    return txn_data
 
 
-def put_kv_txn(mapping, endpoint=DEFAULT_TXN_ENDPOINT, timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
+def put_kv_txn(mapping, endpoint=DEFAULT_TXN_ENDPOINT, verb='set', timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
     """
     Update multiple keys inside a single, atomic transaction.
     The body of the request should be a list of operations to
@@ -79,10 +79,12 @@ def put_kv_txn(mapping, endpoint=DEFAULT_TXN_ENDPOINT, timeout=socket._GLOBAL_DE
     https://www.consul.io/docs/agent/http/kv.html
     :param dict mapping: flat dict of key/values put
     :param str endpoint: API url to PUT to. Should be a txn endpoint.
+    :param str verb: The type of operation to perform. See the list of possibilities
+    here https://www.consul.io/docs/agent/http/kv.html#txn
     :param int timeout: Seconds before timing out
     :return None:
     """
-    txn_data = _mapping_to_txn_data(mapping, verb='set')
+    txn_data = _mapping_to_txn_data(mapping, verb=verb)
     data = dumps(txn_data).encode('utf-8')
     req = request.Request(
         url=endpoint, data=data, method='PUT',

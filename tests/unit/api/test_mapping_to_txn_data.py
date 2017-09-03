@@ -42,7 +42,7 @@ class TestMappingToTxnData(TestCase):
         ret = _mapping_to_txn_data(self.mapping, verb='cas')
 
         expected_txn_data = [
-            {'KV': {'Key': 'some/key/1', 'Value': self.value_fixture1, 'Verb': 'cas'}},
-            {'KV': {'Key': 'some/key/2', 'Value': self.value_fixture2, 'Verb': 'cas'}}
+            {'Index': 0, 'KV': {'Key': 'some/key/1', 'Value': self.value_fixture1, 'Verb': 'cas'}},
+            {'Index': 0, 'KV': {'Key': 'some/key/2', 'Value': self.value_fixture2, 'Verb': 'cas'}}
         ]
         self.assertCountEqual(ret, expected_txn_data)

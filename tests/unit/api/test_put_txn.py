@@ -43,6 +43,19 @@ class TestPutTxn(TestCase):
             headers={'Content-Type': 'application/json'}
         )
 
+    def test_put_kv_txn_instantiates_request_object_with_specified_verb(self):
+        put_kv_txn(self.mapping, verb='cas')
+
+        self.expected_data = json.dumps(
+            _mapping_to_txn_data(self.mapping, verb='cas')
+        ).encode('utf-8')
+        self.request.Request.assert_called_once_with(
+            url='http://localhost:8500/v1/txn',
+            data=self.expected_data,
+            method='PUT',
+            headers={'Content-Type': 'application/json'}
+        )
+
     def test_put_kv_txn_does_request(self):
         put_kv_txn(self.mapping)
 

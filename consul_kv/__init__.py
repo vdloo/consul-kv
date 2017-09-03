@@ -29,28 +29,33 @@ class Connection(object):
             timeout=self.timeout
         )
 
-    def put_mapping(self, mapping):
+    def put_mapping(self, mapping, verb='set'):
         """
         Atomically (Txn) put a key/value mapping at the configured endpoint
         :param dict mapping: dict of key/values put
+        :param str verb: The type of operation to perform. See the list of possibilities
+        here https://www.consul.io/docs/agent/http/kv.html#txn
         :return None:
         """
         return put_kv_txn(
             mapping,
             endpoint=join(self.endpoint, 'txn'),
+            verb=verb,
             timeout=self.timeout
         )
 
-    def put_dict(self, dictionary):
+    def put_dict(self, dictionary, verb='set'):
         """
         Atomically (Txn) put a dict at the configured endpoint
         :param dict dictionary: dict of nested keys and values
         {'some': {'key1': 'value1', 'key2': 'value2'} ->
         [{'some/key1': 'value1, 'some/key2': 'value2}]
+        :param str verb: The type of operation to perform. See the list of possibilities
+        here https://www.consul.io/docs/agent/http/kv.html#txn
         :return None:
         """
         mapping = map_dictionary(dictionary)
-        return self.put_mapping(mapping)
+        return self.put_mapping(mapping, verb=verb)
 
     def get_cas(self, k=None, recurse=False):
         """
