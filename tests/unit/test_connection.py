@@ -62,6 +62,17 @@ class TestConnection(TestCase):
         self.put_kv_txn.assert_called_once_with(
             self.mapping,
             endpoint=self.endpoint + 'txn',
+            verb='set',
+            timeout=10
+        )
+
+    def test_connection_put_mapping_calls_put_kv_txn_with_txn_endpoint_and_uses_cas(self):
+        self.conn.put_mapping(self.mapping, verb='cas')
+
+        self.put_kv_txn.assert_called_once_with(
+            self.mapping,
+            endpoint=self.endpoint + 'txn',
+            verb='cas',
             timeout=10
         )
 
@@ -75,7 +86,14 @@ class TestConnection(TestCase):
 
         self.conn.put_dict(self.dictionary)
 
-        put_mapping.assert_called_once_with(self.map_dictionary.return_value)
+        put_mapping.assert_called_once_with(self.map_dictionary.return_value, verb='set')
+
+    def test_connection_put_dict_puts_mapping_if_keys_do_not_already_exit(self):
+        put_mapping = self.set_up_patch('consul_kv.Connection.put_mapping')
+
+        self.conn.put_dict(self.dictionary, verb='cas')
+
+        put_mapping.assert_called_once_with(self.map_dictionary.return_value, verb='cas')
 
     def test_connection_get_calls_get_kv_with_endpoint(self):
         self.conn.get('key1')
