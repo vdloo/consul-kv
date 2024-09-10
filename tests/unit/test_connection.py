@@ -101,7 +101,18 @@ class TestConnection(TestCase):
         self.get_kv.assert_called_once_with(
             k='key1', recurse=False,
             endpoint=self.endpoint + 'kv/',
-            timeout=10
+            timeout=10,
+            decode_utf8=True
+        )
+
+    def test_connection_get_calls_get_kv_with_endpoint_without_decoding_utf8(self):
+        self.conn.get('key1', decode_utf8=False)
+
+        self.get_kv.assert_called_once_with(
+            k='key1', recurse=False,
+            endpoint=self.endpoint + 'kv/',
+            timeout=10,
+            decode_utf8=False
         )
 
     def test_connection_get_recurses_if_specified(self):
@@ -110,7 +121,8 @@ class TestConnection(TestCase):
         self.get_kv.assert_called_once_with(
             k='key2', recurse=True,
             endpoint=self.endpoint + 'kv/',
-            timeout=10
+            timeout=10,
+            decode_utf8=True
         )
 
     def test_connection_get_returns_api_result(self):
@@ -124,7 +136,18 @@ class TestConnection(TestCase):
         self.get_kv_cas.assert_called_once_with(
             k='key1', recurse=False,
             endpoint=self.endpoint + 'kv/',
-            timeout=10
+            timeout=10,
+            decode_utf8=True
+        )
+
+    def test_connection_get_cas_calls_get_kv_cas_with_endpoint_without_decoding_utf8(self):
+        self.conn.get_cas('key1', decode_utf8=False)
+
+        self.get_kv_cas.assert_called_once_with(
+            k='key1', recurse=False,
+            endpoint=self.endpoint + 'kv/',
+            timeout=10,
+            decode_utf8=False
         )
 
     def test_connection_get_cas_recurses_if_specified(self):
@@ -133,7 +156,8 @@ class TestConnection(TestCase):
         self.get_kv_cas.assert_called_once_with(
             k='key1', recurse=True,
             endpoint=self.endpoint + 'kv/',
-            timeout=10
+            timeout=10,
+            decode_utf8=True
         )
 
     def test_connection_get_cas_returns_api_result(self):
@@ -147,7 +171,18 @@ class TestConnection(TestCase):
         self.get_kv_meta.assert_called_once_with(
             k='key1', recurse=False,
             endpoint=self.endpoint,
-            timeout=10
+            timeout=10,
+            decode_utf8=True
+        )
+
+    def test_connection_get_meta_calls_get_kv_meta_with_endpoint_without_decoding_utf8(self):
+        self.conn.get_meta('key1', decode_utf8=False)
+
+        self.get_kv_meta.assert_called_once_with(
+            k='key1', recurse=False,
+            endpoint=self.endpoint,
+            timeout=10,
+            decode_utf8=False
         )
 
     def test_connection_get_meta_recurses_if_specified(self):
@@ -156,7 +191,8 @@ class TestConnection(TestCase):
         self.get_kv_meta.assert_called_once_with(
             k='key1', recurse=True,
             endpoint=self.endpoint,
-            timeout=10
+            timeout=10,
+            decode_utf8= True
         )
 
     def test_connection_get_meta_returns_api_result(self):
@@ -169,7 +205,14 @@ class TestConnection(TestCase):
 
         self.conn.get_mapping('key1')
 
-        get.assert_called_once_with(k='key1', recurse=True)
+        get.assert_called_once_with(k='key1', recurse=True, decode_utf8=True)
+
+    def test_connection_get_mapping_calls_get_recursively_without_decoding_utf8(self):
+        get = self.set_up_patch('consul_kv.Connection.get')
+
+        self.conn.get_mapping('key1', decode_utf8=False)
+
+        get.assert_called_once_with(k='key1', recurse=True, decode_utf8=False)
 
     def test_connection_get_mapping_returns_mapping(self):
         get = self.set_up_patch('consul_kv.Connection.get')
@@ -184,7 +227,15 @@ class TestConnection(TestCase):
 
         self.conn.get_dict('key2')
 
-        get_mapping.assert_called_once_with(k='key2')
+        get_mapping.assert_called_once_with(k='key2', decode_utf8=True)
+
+    def test_connection_get_dict_calls_get_mapping_without_decoding_utf8(self):
+        get_mapping = self.set_up_patch('consul_kv.Connection.get_mapping')
+        self.set_up_patch('consul_kv.dictionary_map')
+
+        self.conn.get_dict('key2', decode_utf8=False)
+
+        get_mapping.assert_called_once_with(k='key2', decode_utf8=False)
 
     def test_connection_get_dict_converts_key_value_mapping_into_dictionary(self):
         get_mapping = self.set_up_patch('consul_kv.Connection.get_mapping')

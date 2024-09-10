@@ -1,5 +1,5 @@
 import unittest
-from mock import patch, Mock
+from unittest.mock import patch, Mock
 
 
 class TestCase(unittest.TestCase):

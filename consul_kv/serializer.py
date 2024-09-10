@@ -15,10 +15,7 @@ def map_dictionary(dictionary):
     def add_item_to_mapping(path, k, v):
         mapping.update({join(path, k): v})
 
-    loop_dictionary(
-        dictionary,
-        callback=add_item_to_mapping
-    )
+    loop_dictionary(dictionary, callback=add_item_to_mapping)
     return mapping
 
 
@@ -34,17 +31,9 @@ def dictionary_map(mapping):
 
     def add_item_to_dictionary(path, k, v):
         dictionary.update(
-            dict_merge(
-                dictionary,
-                inflate_key_value_pair(
-                    join(path, k), v
-                )
-            )
+            dict_merge(dictionary, inflate_key_value_pair(join(path, k), v))
         )
 
-    loop_dictionary(
-        mapping,
-        callback=add_item_to_dictionary
-    )
+    loop_dictionary(mapping, callback=add_item_to_dictionary)
 
     return dictionary

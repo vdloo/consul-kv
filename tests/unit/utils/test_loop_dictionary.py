@@ -1,4 +1,4 @@
-from mock import call, Mock
+from unittest.mock import call, Mock
 
 from consul_kv.utils import loop_dictionary
 from tests.testcase import TestCase

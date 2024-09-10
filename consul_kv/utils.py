@@ -9,7 +9,7 @@ def get_before_slash(string):
     :return str part_before_first_slash: Part of the string before
     the first slash
     """
-    return string.split('/')[0]
+    return string.split("/")[0]
 
 
 def get_after_slash(string):
@@ -20,7 +20,7 @@ def get_after_slash(string):
     :return str part_after_first_slash: Part of the string after
     the first slash
     """
-    return '/'.join(string.split('/')[1:])
+    return "/".join(string.split("/")[1:])
 
 
 def inflate_key_value_pair(k, v):
@@ -38,11 +38,11 @@ def inflate_key_value_pair(k, v):
     deepest nested value
     :return dict nested_dict: nested dict representing the key value pair
     """
-    return {
-        get_before_slash(k): inflate_key_value_pair(
-            get_after_slash(k), v
-        )
-    } if '/' in k else {k: v}
+    return (
+        {get_before_slash(k): inflate_key_value_pair(get_after_slash(k), v)}
+        if "/" in k
+        else {k: v}
+    )
 
 
 def dict_merge(first_dict, second_dict):
@@ -65,18 +65,20 @@ def dict_merge(first_dict, second_dict):
     :param dict second_dict: A dict to combine with another
     :return dict combined_dict: The combined dict.
     """
+
     def merge(dict1, dict2):
         for k, v in dict2.items():
             if k in dict1 and isinstance(dict1[k], dict):
                 merge(dict1[k], dict2[k])
             else:
                 dict1[k] = dict2[k]
+
     merged_dict = deepcopy(first_dict)
     merge(merged_dict, second_dict)
     return merged_dict
 
 
-def loop_dictionary(dictionary, path='', callback=lambda path, k, v: None):
+def loop_dictionary(dictionary, path="", callback=lambda path, k, v: None):
     """
     Loop the dictionary and perform the callback for each value
     :param dict dictionary: dictionary to loop for values

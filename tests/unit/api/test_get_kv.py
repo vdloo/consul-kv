@@ -1,5 +1,5 @@
 import socket
-from mock import Mock
+from unittest.mock import Mock
 
 from consul_kv import get_kv
 from tests.testcase import TestCase

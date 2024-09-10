@@ -8,6 +8,7 @@ class Connection(object):
     """
     Client for the consul key value store API
     """
+
     endpoint = DEFAULT_ENDPOINT
     timeout = DEFAULT_REQUEST_TIMEOUT
 
@@ -24,12 +25,10 @@ class Connection(object):
         :return None:
         """
         return put_kv(
-            k, v, cas,
-            endpoint=join(self.endpoint, 'kv/'),
-            timeout=self.timeout
+            k, v, cas, endpoint=join(self.endpoint, "kv/"), timeout=self.timeout
         )
 
-    def put_mapping(self, mapping, verb='set'):
+    def put_mapping(self, mapping, verb="set"):
         """
         Atomically (Txn) put a key/value mapping at the configured endpoint
         :param dict mapping: dict of key/values put
@@ -39,12 +38,12 @@ class Connection(object):
         """
         return put_kv_txn(
             mapping,
-            endpoint=join(self.endpoint, 'txn'),
+            endpoint=join(self.endpoint, "txn"),
             verb=verb,
-            timeout=self.timeout
+            timeout=self.timeout,
         )
 
-    def put_dict(self, dictionary, verb='set'):
+    def put_dict(self, dictionary, verb="set"):
         """
         Atomically (Txn) put a dict at the configured endpoint
         :param dict dictionary: dict of nested keys and values
@@ -57,65 +56,86 @@ class Connection(object):
         mapping = map_dictionary(dictionary)
         return self.put_mapping(mapping, verb=verb)
 
-    def get_cas(self, k=None, recurse=False):
+    def get_cas(self, k=None, recurse=False, decode_utf8=True):
         """
         Get a value for a key and use CAS to guard updates against updates
         from multiple clients.
         :param str k: key to get
         :param bool recurse: return nested entries
+        :param bool decode_utf8: Whether or not to decode the values as
+        utf-8 text. This is True by default. Pass False here if you wish
+        to retrieve raw blobs of data.
         :return dict mapping: retrieved key/value mapping
         """
         return get_kv_cas(
-            k=k, recurse=recurse,
-            endpoint=join(self.endpoint, 'kv/'),
-            timeout=self.timeout
+            k=k,
+            recurse=recurse,
+            endpoint=join(self.endpoint, "kv/"),
+            timeout=self.timeout,
+            decode_utf8=decode_utf8,
         )
 
-    def get_meta(self, k=None, recurse=False):
+    def get_meta(self, k=None, recurse=False, decode_utf8=True):
         """
         Get the raw un-decoded key value data for a key
         :param str k: key to get
         :param bool recurse: return nested entries
+        :param bool decode_utf8: Whether or not to decode the values as
+        utf-8 text. This is True by default. Pass False here if you wish
+        to retrieve raw blobs of data.
         :return dict: raw API response
         """
         return get_kv_meta(
-            k=k, recurse=recurse,
+            k=k,
+            recurse=recurse,
             endpoint=self.endpoint,
-            timeout=self.timeout
+            timeout=self.timeout,
+            decode_utf8=decode_utf8,
         )
 
-    def get(self, k=None, recurse=False):
+    def get(self, k=None, recurse=False, decode_utf8=True):
         """
         Get a value for a key or all values under that key if recursive is specified
         :param str k: key to get
         :param bool recurse: return nested entries
+        :param bool decode_utf8: Whether or not to decode the values as
+        utf-8 text. This is True by default. Pass False here if you wish
+        to retrieve raw blobs of data.
         :return dict mapping: retrieved key/value mapping
         """
         return get_kv(
-            k=k, recurse=recurse,
-            endpoint=join(self.endpoint, 'kv/'),
-            timeout=self.timeout
+            k=k,
+            recurse=recurse,
+            endpoint=join(self.endpoint, "kv/"),
+            timeout=self.timeout,
+            decode_utf8=decode_utf8,
         )
 
-    def get_mapping(self, k=None):
+    def get_mapping(self, k=None, decode_utf8=True):
         """
         Retrieve a key value mapping from a specified key
         Note: contrary to put_mapping, this method is not atomic
         :param k: The key to get recursively and return as a key value mapping
+        :param bool decode_utf8: Whether or not to decode the values as
+        utf-8 text. This is True by default. Pass False here if you wish
+        to retrieve raw blobs of data.
         :return dict mapping: The retrieved key value mapping
         """
-        return self.get(k=k, recurse=True)
+        return self.get(k=k, recurse=True, decode_utf8=decode_utf8)
 
-    def get_dict(self, k=None):
+    def get_dict(self, k=None, decode_utf8=True):
         """
         Retrieve a dict that represents nested key value entries from the specified
         endpoint. [{'some/key1': 'value1, 'some/key2': 'value2}] ->
         {'some': {'key1': 'value1', 'key2': 'value2'}
         Note: contrary to put_dict, this method is not atomic
         :param k: The key to get recursively and return as a dict
+        :param bool decode_utf8: Whether or not to decode the values as
+        utf-8 text. This is True by default. Pass False here if you wish
+        to retrieve raw blobs of data.
         :return dict dictionary: The retrieved dict of nested keys and values
         """
-        mapping = self.get_mapping(k=k)
+        mapping = self.get_mapping(k=k, decode_utf8=decode_utf8)
         return dictionary_map(mapping)
 
     def delete(self, k=None, recurse=False):
@@ -126,7 +146,8 @@ class Connection(object):
         :return None:
         """
         return delete_kv(
-            k=k, recurse=recurse,
-            endpoint=join(self.endpoint, 'kv/'),
-            timeout=self.timeout
+            k=k,
+            recurse=recurse,
+            endpoint=join(self.endpoint, "kv/"),
+            timeout=self.timeout,
         )

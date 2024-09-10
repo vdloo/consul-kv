@@ -1,7 +1,7 @@
 import socket
 import json
 
-from mock import Mock
+from unittest.mock import Mock
 
 from consul_kv.api import _mapping_to_txn_data
 from tests.testcase import TestCase

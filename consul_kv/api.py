@@ -12,8 +12,7 @@ log = getLogger(__name__)
 
 
 def put_kv(
-    k, v, cas=None, endpoint=DEFAULT_KV_ENDPOINT,
-    timeout=socket._GLOBAL_DEFAULT_TIMEOUT
+    k, v, cas=None, endpoint=DEFAULT_KV_ENDPOINT, timeout=socket._GLOBAL_DEFAULT_TIMEOUT
 ):
     """
     Put a key and value to the distributed key value store at the location path
@@ -27,23 +26,21 @@ def put_kv(
     encoded = str.encode(str(v))
     params = dict()
     if cas:
-        params['cas'] = cas
+        params["cas"] = cas
 
     url = join(endpoint, k) if k else endpoint
 
     if params:
         url = "{}/?{}".format(url, urlencode(params))
 
-    req = request.Request(
-        url=url, data=encoded, method='PUT'
-    )
+    req = request.Request(url=url, data=encoded, method="PUT")
     with request.urlopen(req, timeout=timeout) as f:
-        log.debug("PUT k v pair ({}, {}) to {}: {}, {}".format(
-            k, v, url, f.status, f.reason
-        ))
+        log.debug(
+            "PUT k v pair ({}, {}) to {}: {}, {}".format(k, v, url, f.status, f.reason)
+        )
 
 
-def _mapping_to_txn_data(mapping, verb='set'):
+def _mapping_to_txn_data(mapping, verb="set"):
     """
     Transform a key value mapping to a list of operations to perform
     inside the atomic transaction.
@@ -54,22 +51,28 @@ def _mapping_to_txn_data(mapping, verb='set'):
     """
     txn_data = [
         {
-            'KV': {
-                'Verb': verb,
-                'Key': k,
-                'Value': b64encode(str(v).encode('utf-8')).decode('utf-8'),
+            "KV": {
+                "Verb": verb,
+                "Key": k,
+                "Value": b64encode(str(v).encode("utf-8")).decode("utf-8"),
             }
-        } for k, v in mapping.items()
+        }
+        for k, v in mapping.items()
     ]
-    if verb == 'cas':
+    if verb == "cas":
         # If the index is 0, Consul will only put the key if it does not already exist.
         # See https://www.consul.io/api/kv.html#create-update-key
         for item in txn_data:
-            item['Index'] = 0
+            item["Index"] = 0
     return txn_data
 
 
-def put_kv_txn(mapping, endpoint=DEFAULT_TXN_ENDPOINT, verb='set', timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
+def put_kv_txn(
+    mapping,
+    endpoint=DEFAULT_TXN_ENDPOINT,
+    verb="set",
+    timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
+):
     """
     Update multiple keys inside a single, atomic transaction.
     The body of the request should be a list of operations to
@@ -85,15 +88,19 @@ def put_kv_txn(mapping, endpoint=DEFAULT_TXN_ENDPOINT, verb='set', timeout=socke
     :return None:
     """
     txn_data = _mapping_to_txn_data(mapping, verb=verb)
-    data = dumps(txn_data).encode('utf-8')
+    data = dumps(txn_data).encode("utf-8")
     req = request.Request(
-        url=endpoint, data=data, method='PUT',
-        headers={'Content-Type': 'application/json'}
+        url=endpoint,
+        data=data,
+        method="PUT",
+        headers={"Content-Type": "application/json"},
     )
     with request.urlopen(req, timeout=timeout) as f:
-        log.debug("PUT k v mapping {} to {}: {}, {}".format(
-            mapping, endpoint, f.status, f.reason
-        ))
+        log.debug(
+            "PUT k v mapping {} to {}: {}, {}".format(
+                mapping, endpoint, f.status, f.reason
+            )
+        )
 
 
 def get_kv_builder(postprocessor=lambda x: x):
@@ -108,9 +115,13 @@ def get_kv_builder(postprocessor=lambda x: x):
     and applies the passed postprocessor before returning the retrieved
     value
     """
+
     def get_kv_raw(
-        k=None, recurse=False, endpoint=DEFAULT_KV_ENDPOINT,
-        timeout=socket._GLOBAL_DEFAULT_TIMEOUT
+        k=None,
+        recurse=False,
+        endpoint=DEFAULT_KV_ENDPOINT,
+        timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
+        decode_utf8=True,
     ):
         """
         Get the key value mapping from the distributed key value store and
@@ -121,42 +132,68 @@ def get_kv_builder(postprocessor=lambda x: x):
         retrieve all nested values
         :param str endpoint: API url to get the value from
         :param int timeout: Seconds before timing out
+        :param bool decode_utf8: Whether or not to decode the values as
+        utf-8 text. This is True by default. Pass False here if you wish
+        to retrieve raw blobs of data.
         :return dict|mul mapping: key value mapping, or the return value
         as defined in the specified postprocessor of the outer function.
         """
         url = join(endpoint, k) if k else endpoint
         url = "{}/?recurse".format(url) if recurse else url
-        req = request.Request(
-            url=url,
-            method='GET'
-        )
+        req = request.Request(url=url, method="GET")
         with request.urlopen(req, timeout=timeout) as r:
-            result = loads(r.read().decode('utf-8'))
-        return postprocessor(result)
+            result = loads(r.read().decode("utf-8"))
+        return postprocessor(result, decode_utf8=decode_utf8)
+
     return get_kv_raw
+
 
 get_kv_meta = get_kv_builder()
 
 get_kv_cas = get_kv_builder(
-    lambda x: {
-        r['Key']: (b64decode(r['Value']).decode('utf-8'), r['ModifyIndex'])
-        if r['Value'] else None for r in x if r['Key']
+    lambda result, decode_utf8: {
+        r["Key"]: (
+            (
+                (
+                    b64decode(r["Value"]).decode("utf-8")
+                    if decode_utf8
+                    else b64decode(r["Value"])
+                ),
+                r["ModifyIndex"],
+            )
+            if r["Value"]
+            else None
+        )
+        for r in result
+        if r["Key"]
     }
 )
 
 get_kv = get_kv_builder(
-    lambda x: {
+    lambda result, decode_utf8: {
         # values are stored base64 encoded in consul, they
         # are decoded before returned by this function.
-        r['Key']: b64decode(r['Value']).decode('utf-8')
-        if r['Value'] else None for r in x if r['Key']
+        r["Key"]: (
+            (
+                b64decode(r["Value"]).decode("utf-8")
+                if decode_utf8
+                else b64decode(r["Value"])
+            )
+            if r["Value"]
+            else None
+        )
+        for r in result
+        if r["Key"]
     }
 )
 
 
 def delete_kv(
-    k=None, cas=None, recurse=False, endpoint=DEFAULT_KV_ENDPOINT,
-    timeout=socket._GLOBAL_DEFAULT_TIMEOUT
+    k=None,
+    cas=None,
+    recurse=False,
+    endpoint=DEFAULT_KV_ENDPOINT,
+    timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
 ):
     """
     Delete a key from the distributed key value store
@@ -169,23 +206,19 @@ def delete_kv(
     """
     params = dict()
     if cas:
-        params['cas'] = cas
+        params["cas"] = cas
     if recurse:
-        params['recurse'] = recurse
+        params["recurse"] = recurse
 
     url = join(endpoint, k) if k else endpoint
 
     if params:
         url = "{}/?{}".format(url, urlencode(params))
 
-    req = request.Request(
-        url=url,
-        method='DELETE'
-    )
+    req = request.Request(url=url, method="DELETE")
     with request.urlopen(req, timeout=timeout) as f:
-        log.debug("DELETEd key {}{}: {} {}".format(
-            url,
-            ' recursively' if recurse else '',
-            f.status,
-            f.reason
-        ))
+        log.debug(
+            "DELETEd key {}{}: {} {}".format(
+                url, " recursively" if recurse else "", f.status, f.reason
+            )
+        )
