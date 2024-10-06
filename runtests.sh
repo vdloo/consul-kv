@@ -26,7 +26,7 @@ test_script="
     echo 'Running consul-kv unit tests';
     nosetests --processes=$numprocs;
     echo 'Checking PEP8';
-    echo consul_kv | xargs autopep8 -r --diff;
+    echo consul_kv | xargs black --check;
 "
 
 if [ -z $RUN_ONCE ]; then

@@ -1,3 +1,17 @@
+### 0.7.4
+
+Adds decode_utf8 parameter to get calls so that binary data can be retrieved. 
+Before the assumption was made that all data was UTF-8 text. With this new parameter also binary blobs can be retrieved.
+```
+In [3]: from consul_kv import Connection
+   ...: conn = Connection(endpoint='http://localhost:8500/v1/')
+
+In [4]: conn.get('nontext-test', decode_utf8=False)
+Out[4]: {'nontext-test': b'\x00\x01\x02\x03\x04\x05\xde'}
+```
+
+Thanks to [ulidtko](https://github.com/ulidtko) for the feedback.
+
 ### 0.7.3
 
 Add verb to put_dict so it can use CAS to only create the keys in the mapping if they do not exist yet.
