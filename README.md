@@ -1,6 +1,6 @@
-[![Build Status](https://travis-ci.org/vdloo/consul-kv.svg?branch=master)](https://travis-ci.org/vdloo/consul-kv)
-
 # consul-kv
+
+NOTE: this library is not actively maintained, if you are looking for actively maintained similar libraries please see https://developer.hashicorp.com/consul/api-docs/libraries-and-sdks.
 
 Python 3 client for the [consul key/value store](https://www.consul.io/docs/agent/http/kv.html).
 
